@@ -2,16 +2,20 @@ package com.omkar.user_product_management.Controller;
 
 import com.omkar.user_product_management.Model.Product;
 import com.omkar.user_product_management.Service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@CrossOrigin(origins = "https://omkarp7hy1rjscpfoqqb.drops.nxtwave.tech")
 @RestController
 @RequestMapping("/product")
+@Validated
 public class ProductController {
     private final ProductService productService;
 
@@ -20,7 +24,7 @@ public class ProductController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Product> add(@RequestBody Product product) {
+    public ResponseEntity<Product> add(@Valid @RequestBody Product product) {
         return ResponseEntity.status(HttpStatus.CREATED).body( productService.Add(product));
     }
 
@@ -34,33 +38,41 @@ public class ProductController {
         return productService.getAll();
     }
 
+    @GetMapping("/getbyid/{id}")
+    public ResponseEntity<Product> getById(@PathVariable("id") int id){
+       return ResponseEntity.ok(productService.getById(id));
+    }
+
     @GetMapping()
     public ResponseEntity<List<Product>> get(
+            @RequestParam Optional<String> sort_by,
+            @RequestParam Optional<String> category,
             @RequestParam Optional<Double> price,
             @RequestParam Optional<Float> rating,
-            @RequestParam Optional<String> name
+            @RequestParam Optional<String> title_search
     ){
-        Double priceValue = price.orElse(0.0d);
+        String sortValue = sort_by.orElse("LOW_HIGH");
+        String categoryValue = category.orElse("");
+        Double priceValue = price.orElse(20.0d);
         Float ratingValue = rating.orElse(0.0f);
-        String nameValue = name.orElse("");
-        List<Product>products= productService.get(priceValue , ratingValue, nameValue);
+        String titleValue = title_search.orElse("");
+        List<Product>products= productService.get(sortValue, priceValue , ratingValue,categoryValue, titleValue);
         return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/getbynameignorecase/{name}")
-    public ResponseEntity<Optional<Product> > getByNameIgnoreCase(@PathVariable String name) {
-        Optional<Product> product = productService.getByNameIgnoreCase(name);
-        if (product.isPresent()) {
-            return ResponseEntity.ok(product);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/getbytitleignorecase/{title}")
+    public ResponseEntity<List<Product> > getByTitleIgnoreCase(@PathVariable("title") String title) {
+        List<Product> products = productService.getByNameIgnoreCase(title);
+        return ResponseEntity.ok(products);
+
     }
 
-    @GetMapping("/getbyprice/{price}")
-    public ResponseEntity<?> getByPrice(@PathVariable double price){
-        return ResponseEntity.ok(productService.getByPrice(price));
+    @DeleteMapping("/deletebyid/{id}")
+    public ResponseEntity deleteById(@PathVariable("id") int id){
+        productService.deleteById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
     @DeleteMapping("/deleteall")
     public ResponseEntity<?>deleteAll(){
         boolean delete=productService.deleteAll();
@@ -69,28 +81,4 @@ public class ProductController {
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
-
-    @PutMapping("/updatebyname/{name}")
-    public ResponseEntity<?> updateByIdName(@PathVariable String name,@RequestBody Product product){
-        Product updated = productService.updateByidName(name,product);
-        if (updated!=null){
-            return ResponseEntity.ok(updated);
-        }else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found with name : " +name );
-        }
-    }
-    @GetMapping("/getbyratinggraterthan/{rating}")
-    public ResponseEntity<?>getByRatingGraterThan(@PathVariable float rating){
-        List<Product>products= productService.getByRatingGraterThan(rating);
-        return ResponseEntity.ok(products);
-    }
-
-    @GetMapping("/{name}")
-    public ResponseEntity<?> getByNameContaining(@PathVariable("name") String name){
-        List<Product> list = productService.findByNameContaining(name);
-        System.out.println(list);
-        return ResponseEntity.ok(list);
-    }
-
 }

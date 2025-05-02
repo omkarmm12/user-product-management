@@ -1,55 +1,29 @@
 package com.omkar.user_product_management.Model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Users {
     @Id
+    @Email
     private String email;
+    @NotBlank
     private String username;
+    @NotBlank
+    @Column(nullable = false)
     private String password;
-    private String roles;
+    private String role = "USER";
 
-    public Users() {
-    }
-
-    public Users(String email, String username, String password, String role) {
-        this.email = email;
-        this.username = username;
-        this.password = password;
-        this.roles = role;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getRole() {
-        return roles;
-    }
-
-    public void setRole(String role) {
-        this.roles = role;
-    }
 }

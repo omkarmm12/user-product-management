@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product,String> {
-    Optional<Product> findByNameIgnoreCase(String name);
-    List<Product> findByPrice(double price);
-    List<Product> findByRatingGreaterThan(float rating);
-    List<Product> findByPriceGreaterThanAndRatingGreaterThanAndNameContainingIgnoreCase(Double price, Float rating, String name);
-    List<Product> findByNameContaining(String name);
+public interface ProductRepository extends JpaRepository<Product,Integer> {
+    List<Product> findByTitleIgnoreCase(String title);
+    List<Product> findByPriceGreaterThanAndRatingGreaterThanAndCategoryContainingIgnoreCaseAndTitleContainingIgnoreCase(Double price, Float rating,String category,String title);
+    Optional<Product> findByTitle(String title);
 }
