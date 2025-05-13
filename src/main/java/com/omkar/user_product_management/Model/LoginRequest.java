@@ -1,12 +1,16 @@
 package com.omkar.user_product_management.Model;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
-public class BearerToken {
-    private String jwt_token;
+@NoArgsConstructor
+public class LoginRequest {
+    private String email;
+    private String password;
 }

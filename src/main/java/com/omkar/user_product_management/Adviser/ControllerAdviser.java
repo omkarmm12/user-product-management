@@ -1,8 +1,8 @@
 package com.omkar.user_product_management.Adviser;
 
 import com.omkar.user_product_management.Exceptions.ConstraintViolationException;
-import com.omkar.user_product_management.Exceptions.UserAlreadyExistsException;
-import com.omkar.user_product_management.Exceptions.UserNotFoundException;
+import com.omkar.user_product_management.Exceptions.AlreadyExistsException;
+import com.omkar.user_product_management.Exceptions.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ControllerAdviser {
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<?> userAlreadyException(UserAlreadyExistsException e){
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<?> userAlreadyException(AlreadyExistsException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<?> userNotFoundException(UserNotFoundException e){
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<?> userNotFoundException(NotFoundException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
@@ -30,6 +30,11 @@ public class ControllerAdviser {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> constrainException(ConstraintViolationException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> runtimeException(RuntimeException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 }

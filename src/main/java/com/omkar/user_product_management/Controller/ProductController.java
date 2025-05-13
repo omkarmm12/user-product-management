@@ -12,10 +12,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@CrossOrigin(origins = "https://omkarp7hy1rjscpfoqqb.drops.nxtwave.tech")
+
 @RestController
 @RequestMapping("/product")
 @Validated
+@CrossOrigin(origins = {"https://omkarsfashion.ccbp.tech", "https://omkarp7hy1rjscpfoqqb.drops.nxtwave.tech"},
+        allowedHeaders  = {"Authorization", "Content-Type"},
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS, RequestMethod.DELETE, RequestMethod.PATCH}
+)
 public class ProductController {
     private final ProductService productService;
 
@@ -38,7 +42,7 @@ public class ProductController {
         return productService.getAll();
     }
 
-    @GetMapping("/getbyid/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<Product> getById(@PathVariable("id") int id){
        return ResponseEntity.ok(productService.getById(id));
     }
@@ -60,15 +64,20 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/getbytitleignorecase/{title}")
+    @GetMapping("/get/{title}")
     public ResponseEntity<List<Product> > getByTitleIgnoreCase(@PathVariable("title") String title) {
         List<Product> products = productService.getByNameIgnoreCase(title);
         return ResponseEntity.ok(products);
 
     }
 
-    @DeleteMapping("/deletebyid/{id}")
-    public ResponseEntity deleteById(@PathVariable("id") int id){
+    @PutMapping("/update/{id}")
+    public Product updateById(@PathVariable("id") int id, @RequestBody Product product){
+        return productService.updateById(id, product);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable("id") int id){
         productService.deleteById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

@@ -1,7 +1,7 @@
 package com.omkar.user_product_management.Controller;
 
 import com.omkar.user_product_management.Model.BearerToken;
-import com.omkar.user_product_management.Model.UserLogin;
+import com.omkar.user_product_management.Model.LoginRequest;
 import com.omkar.user_product_management.Model.Users;
 import com.omkar.user_product_management.Service.UserService;
 
@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
-@CrossOrigin(origins = {"https://omkarsfashion.ccbp.tech/", "https://omkarp7hy1rjscpfoqqb.drops.nxtwave.tech/"})
 @RestController()
 @RequestMapping("/user")
 public class UserController {
@@ -24,18 +22,23 @@ public class UserController {
 
     @PostMapping("/register")
     public String register(@RequestBody Users user){
-        System.out.println(user.getEmail());
         return userService.register(user);
     }
     @PostMapping("/login")
-    public BearerToken login(@RequestBody UserLogin userLogin){
+    public BearerToken login(@RequestBody LoginRequest userLogin){
         return userService.verify(userLogin);
     }
 
-    @GetMapping("/getall")
+    @GetMapping("/get")
     public List<Users> get(){
         return userService.get();
     }
+
+    @GetMapping("/get/{email}")
+    public Users getById(@PathVariable("email") String email){
+        return userService.getById(email);
+    }
+
     @DeleteMapping("/delete/{email}")
     public ResponseEntity<?> delete(@PathVariable("email") String email){
         userService.delete(email);

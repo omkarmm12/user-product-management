@@ -1,7 +1,7 @@
 package com.omkar.user_product_management.Service;
 
-import com.omkar.user_product_management.Exceptions.UserAlreadyExistsException;
-import com.omkar.user_product_management.Exceptions.UserNotFoundException;
+import com.omkar.user_product_management.Exceptions.AlreadyExistsException;
+import com.omkar.user_product_management.Exceptions.NotFoundException;
 import com.omkar.user_product_management.Model.Product;
 import com.omkar.user_product_management.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ public class ProductService {
     public Product Add(Product product) {
         boolean Existing=productRepository.existsById(product.getId());
         if (Existing){
-            throw  new UserAlreadyExistsException("Product with Id : "+product.getId()+ " name : "+product.getTitle() + " exist.");
+            throw  new AlreadyExistsException("Product with Id : "+product.getId()+ " name : "+product.getTitle() + " exist.");
         }else{
             return productRepository.save(product);
         }
@@ -42,6 +42,16 @@ public class ProductService {
         }
             return productList2;
     }
+
+    public Product getById(int id) {
+        Optional<Product> isExist = productRepository.findById(id);
+        if(isExist.isEmpty()){
+            throw new NotFoundException("Product with Id : "+id+ " not exist");
+        }else{
+            return isExist.get();
+        }
+    }
+
     public List<Product> getAll() {
         return productRepository.findAll();
     }
@@ -61,9 +71,9 @@ public class ProductService {
     }
 
 
-    public Product updateByTitle(String title, Product product) {
+    public Product updateById(int id, Product product) {
 
-        Optional<Product> ExistingProduct = productRepository.findByTitle(title);
+        Optional<Product> ExistingProduct = productRepository.findById(id);
 
         if (ExistingProduct.isPresent()) {
             Product Exist = ExistingProduct.get();
@@ -75,9 +85,9 @@ public class ProductService {
                 Exist.setRating(product.getRating());
             }
             productRepository.save(Exist);
-            return Exist;
+            return productRepository.findById(id).get();
         } else {
-            throw  new UserNotFoundException("product not found with name : " +title);
+            throw  new NotFoundException("product not found with id : " +id);
 
         }
     }
@@ -97,19 +107,11 @@ public class ProductService {
     public void deleteById(int id) {
         Optional<Product> isExist = productRepository.findById(id);
         if(isExist.isEmpty()){
-            throw new UserNotFoundException("Product with Id : "+id+" not found");
+            throw new NotFoundException("Product with Id : "+id+" not found");
         }else{
             productRepository.deleteById(id);
         }
     }
 
-    public Product getById(int id) {
-        Optional<Product> isExist = productRepository.findById(id);
-        if(isExist.isEmpty()){
-            throw new UserNotFoundException("Product with Id : "+id+ " not exist");
-        }else{
-            return isExist.get();
-        }
-    }
 }
 

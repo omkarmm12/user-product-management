@@ -1,6 +1,6 @@
 package com.omkar.user_product_management.Service;
 
-import com.omkar.user_product_management.Exceptions.UserNotFoundException;
+import com.omkar.user_product_management.Exceptions.NotFoundException;
 import com.omkar.user_product_management.Model.Users;
 import com.omkar.user_product_management.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<Users> exist = userRepository.findById(email);
         if(exist.isEmpty()){
-            throw new UserNotFoundException("User with "+email+" ot registered yet");
+            throw new NotFoundException("User with "+email+" ot registered yet");
         }
         return new CustomUserDetails(exist.get());
     }

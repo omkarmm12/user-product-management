@@ -1,15 +1,19 @@
 package com.omkar.user_product_management.Service;
 
-import com.omkar.user_product_management.Exceptions.UserAlreadyExistsException;
-import com.omkar.user_product_management.Exceptions.UserNotFoundException;
+import com.omkar.user_product_management.Exceptions.AlreadyExistsException;
+import com.omkar.user_product_management.Exceptions.NotFoundException;
+import com.omkar.user_product_management.JwtUtils.JwtUtils;
 import com.omkar.user_product_management.Model.BearerToken;
-import com.omkar.user_product_management.Model.UserLogin;
+import com.omkar.user_product_management.Model.LoginRequest;
+import com.omkar.user_product_management.Model.Role;
 import com.omkar.user_product_management.Model.Users;
 import com.omkar.user_product_management.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +23,11 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @Autowired
     private AuthenticationManager authManager;
@@ -27,16 +35,25 @@ public class UserService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+
+    public Users getById(String email) {
+        Optional<Users> user = userRepository.findById(email);
+        if(user.isEmpty()){
+            throw new NotFoundException("User with email : "+email+" not exist");
+        }
+        return user.get();
     }
 
     public String register(Users user) {
+        if(user.getRole() == null || user.getRole().toString().equalsIgnoreCase("user")){
+            user.setRole(Role.ROLE_USER);
+        }else if(user.getRole().toString().equalsIgnoreCase("admin")){
+            user.setRole(Role.ROLE_ADMIN);
+        }
         try {
             Optional<Users> exist = userRepository.findById(user.getEmail());
             if(exist.isPresent()){
-                throw new UserAlreadyExistsException("Email already registered. Please use a different email");
+                throw new AlreadyExistsException("Email already registered. Please use a different email");
             }
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
@@ -46,20 +63,22 @@ public class UserService {
         }
     }
 
-    public BearerToken verify(UserLogin userLogin) {
+    public BearerToken verify(LoginRequest userLogin) {
+        Authentication authentication = null;
         Optional<Users> existingUser = userRepository.findById(userLogin.getEmail());
         if(existingUser.isEmpty()){
-            throw new UserNotFoundException("Invalid email id");
+            throw new NotFoundException("Invalid email id");
         }
         try {
-            Authentication authentication = authManager
+            authentication = authManager
                     .authenticate(new UsernamePasswordAuthenticationToken(userLogin.getEmail(), userLogin.getPassword()));
-
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String token = jwtUtils.generateToken(userDetails);
+            return new BearerToken(token);
         }catch (Exception e){
-            throw new UserNotFoundException("Invalid password");
+            throw new NotFoundException("Password correct kottu ra");
         }
-
-        return new BearerToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJhaHVsIiwicm9sZSI6IlBSSU1FX1VTRVIiLCJpYXQiOjE2MjMwNjU1MzJ9.D13s5wN3Oh59aa_qtXMo3Ec4wojOx0EZh8Xr5C5sRkU");
     }
 
     public List<Users> get() {
@@ -70,7 +89,8 @@ public class UserService {
         try {
             userRepository.deleteById(email);
         }catch (Exception e) {
-            throw new UserNotFoundException("No user with " + email);
+            throw new NotFoundException("Email : " + email+" does not exist");
         }
     }
+
 }
